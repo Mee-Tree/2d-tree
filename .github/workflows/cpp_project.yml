@@ -1,4 +1,4 @@
-name: Template CI
+name: CPP project with GTest CI
 
 on: [push]
 

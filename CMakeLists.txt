@@ -4,8 +4,8 @@ set(PROJECT_NAME templatename)
 project(${PROJECT_NAME})
 
 # Set up the compiler flags
-set(CMAKE_CXX_FLAGS "-g -Wall")
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS "-g -Wall -Werror")
+set(CMAKE_CXX_STANDARD 17)
 
 # Inlcude directories
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
