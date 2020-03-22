@@ -6,10 +6,8 @@ public:
 	Point(double x, double y);
 
 	double x() const;
-
 	double y() const;
-
-	double distance(const Point &) const; // euclidian distance
+	double distance(const Point &) const;
 
 	bool operator< (const Point &) const;
 	bool operator> (const Point &) const;
@@ -17,6 +15,9 @@ public:
 	bool operator>= (const Point &) const;
 	bool operator== (const Point &) const;
 	bool operator!= (const Point &) const;
+
+	friend std::ostream & operator << (std::ostream &, const Point &);
+
 };
 
 class Rect {
@@ -28,13 +29,15 @@ public:
 	double ymin() const;
 	double xmax() const;
 	double ymax() const;
-	double distance(const Point &) const;
+	double distance(const Point & p) const;
 
-	bool contains(const Point &) const;
+	bool contains(const Point & p) const;
 	bool intersects(const Rect &) const;
 };
 
-class PointsSet {
+namespace rbtree {
+
+class PointSet {
 public:
 
     using ForwardIt = ...;
@@ -42,23 +45,44 @@ public:
     PointsSet();
 
     bool empty() const;
-
     std::size_t size() const;
-
     void put(const Point &);
-
     bool contains(const Point &) const;
 
     std::pair<ForwardIt, ForwardIt> range(const Rect &) const;
-
     ForwardIt begin() const;
-
     ForwardIt end() const;
 
-    const std::optional<Point> & nearest(const Point &) const;
+    std::optional<Point> nearest(const Point &) const;
 
-    friend std::ostream & operator << (const PointsTable &);
+    friend std::ostream & operator << (const PointsSet &);
+
 };
 
+}
 
+namespace kdtree {
 
+class PointSet {
+public:
+
+    using ForwardIt = ...;
+
+    PointsSet();
+
+    bool empty() const;
+    std::size_t size() const;
+    void put(const Point &);
+    bool contains(const Point &) const;
+
+    std::pair<ForwardIt, ForwardIt> range(const Rect &) const;
+    ForwardIt begin() const;
+    ForwardIt end() const;
+
+    std::optional<Point> nearest(const Point &) const;
+
+    friend std::ostream & operator << (const PointsSet &);
+
+};
+
+}
