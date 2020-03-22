@@ -42,7 +42,7 @@ public:
 
     using ForwardIt = ...;
 
-    PointsSet();
+    PointSet();
 
     bool empty() const;
     std::size_t size() const;
@@ -55,7 +55,7 @@ public:
 
     std::optional<Point> nearest(const Point &) const;
 
-    friend std::ostream & operator << (const PointsSet &);
+    friend std::ostream & operator << (std::ostream &, const PointSet &);
 
 };
 
@@ -68,7 +68,7 @@ public:
 
     using ForwardIt = ...;
 
-    PointsSet();
+    PointSet();
 
     bool empty() const;
     std::size_t size() const;
@@ -81,7 +81,7 @@ public:
 
     std::optional<Point> nearest(const Point &) const;
 
-    friend std::ostream & operator << (const PointsSet &);
+    friend std::ostream & operator << (std::ostream &, const PointSet &);
 
 };
 
