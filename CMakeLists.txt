@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(PROJECT_NAME templatename)
+set(PROJECT_NAME 2d_tree)
 project(${PROJECT_NAME})
 
 # Set up the compiler flags
@@ -18,13 +18,13 @@ file(GLOB SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 list(REMOVE_ITEM SRC_FILES ${PROJECT_SOURCE_DIR}/src/main.cpp)
 
 # Compile source files into a library
-add_library(templatename_lib ${SRC_FILES})
+add_library(2d_tree_lib ${SRC_FILES})
 
 # Main is separate
-add_executable(templatename ${PROJECT_SOURCE_DIR}/src/main.cpp)
+add_executable(2d_tree ${PROJECT_SOURCE_DIR}/src/main.cpp)
 
 # linking Main against the library
-target_link_libraries(templatename templatename_lib)
+target_link_libraries(2d_tree 2d_tree_lib)
 
 # google test is a git submodule
 add_subdirectory(./googletest)
@@ -44,4 +44,4 @@ add_executable(runUnitTests ${TEST_SRC_FILES})
 target_link_libraries(runUnitTests gtest gtest_main)
 
 # Extra linking for the project
-target_link_libraries(runUnitTests templatename_lib)
+target_link_libraries(runUnitTests 2d_tree_lib)
