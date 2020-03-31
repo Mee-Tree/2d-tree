@@ -1,11 +1,14 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.13)
+
+include(test/Strict.cmake)
 
 set(PROJECT_NAME 2d_tree)
 project(${PROJECT_NAME})
 
 # Set up the compiler flags
-set(CMAKE_CXX_FLAGS "-g -Wall -Werror")
+set(CMAKE_CXX_FLAGS "-g")
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Inlcude directories
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
@@ -19,9 +22,13 @@ list(REMOVE_ITEM SRC_FILES ${PROJECT_SOURCE_DIR}/src/main.cpp)
 
 # Compile source files into a library
 add_library(2d_tree_lib ${SRC_FILES})
+target_compile_options(2d_tree_lib PUBLIC ${COMPILE_OPTS})
+target_link_options(2d_tree_lib PUBLIC ${LINK_OPTS})
 
 # Main is separate
 add_executable(2d_tree ${PROJECT_SOURCE_DIR}/src/main.cpp)
+target_compile_options(2d_tree PRIVATE ${COMPILE_OPTS})
+target_link_options(2d_tree PRIVATE ${LINK_OPTS})
 
 # linking Main against the library
 target_link_libraries(2d_tree 2d_tree_lib)
@@ -34,14 +41,5 @@ enable_testing()
 # Include the gtest library
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-# Test files
-file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
-
-# Unit tests
-add_executable(runUnitTests ${TEST_SRC_FILES})
-
-# Standard linking to gtest stuff
-target_link_libraries(runUnitTests gtest gtest_main)
-
-# Extra linking for the project
-target_link_libraries(runUnitTests 2d_tree_lib)
+# test is a git submodule
+add_subdirectory(test)
