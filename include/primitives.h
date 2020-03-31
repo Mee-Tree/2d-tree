@@ -54,6 +54,7 @@ public:
     ForwardIt end() const;
 
     std::optional<Point> nearest(const Point &) const;
+    std::pair<ForwardIt, ForwardIt> nearest(const Point & p, std::size_t k) const;
 
     friend std::ostream & operator << (std::ostream &, const PointSet &);
 
@@ -81,6 +82,7 @@ public:
 
     std::optional<Point> nearest(const Point &) const;
     std::pair<ForwardIt, ForwardIt> nearest(const Point &, std::size_t) const;
+    std::pair<ForwardIt, ForwardIt> nearest(const Point & p, std::size_t k) const;
 
     friend std::ostream & operator << (std::ostream &, const PointSet &);
 
