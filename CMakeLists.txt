@@ -38,8 +38,7 @@ add_subdirectory(./googletest)
 
 enable_testing()
 
-# Include the gtest library
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-
 # test is a git submodule
 add_subdirectory(test)
+
+add_test(NAME tests COMMAND runUnitTests)
