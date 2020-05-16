@@ -31,14 +31,14 @@ struct PointSet::Node {
         return point == other;
     }
 
-    Point resize(const Point & p) {
+    Point resize(const Point & p) const {
         if (depth % 2 == 0) {
             return Point(point.x(), p.y());
         }
         return Point(p.x(), point.y());
     }
 
-    Rect get_resized_rect(const Point & p) {
+    Rect get_resized_rect(const Point & p) const {
         Point left_bottom(rect.xmin(), rect.ymin());
         Point right_top(rect.xmax(), rect.ymax());
         if (*this < p) {
@@ -160,37 +160,7 @@ std::optional<Point> PointSet::nearest(const Point & p) const {
     if (empty()) {
         return std::nullopt;
     }
-    Point res(m_root->point);
-    nearest(m_root, p, res);
-    return res;
-}
-
-void PointSet::nearest(const Node * node, const Point & p, Point & res) const {
-    if (node == nullptr || node->rect.distance(p) > p.distance(res)) {
-        return;
-    } else if (p.distance(node->point) < p.distance(res)) {
-        res = node->point;
-    }
-    if (node->left != nullptr && node->right != nullptr) {
-        double left_dist = node->left->rect.distance(p);
-        double right_dist = node->right->rect.distance(p);
-
-        if (left_dist < right_dist) {
-            nearest(node->left, p, res);
-            if (right_dist < p.distance(res)) {
-                nearest(node->right, p, res);
-            }
-        } else {
-            nearest(node->right, p, res);
-            if (left_dist < p.distance(res)) {
-                nearest(node->left, p, res);
-            }
-        }
-    } else if (node->left != nullptr && node->left->rect.distance(p) < p.distance(res)) {
-        nearest(node->left, p, res);
-    } else if (node->right != nullptr && node->right->rect.distance(p) < p.distance(res)) {
-        nearest(node->right, p, res);
-    }
+    return *nearest(p, 1).first;
 }
 
 std::pair<PointSet::ForwardIt, PointSet::ForwardIt>
@@ -212,8 +182,8 @@ void PointSet::range(const Node * node, const Rect & rect, PointSet & res) const
 
 std::pair<PointSet::ForwardIt, PointSet::ForwardIt>
 PointSet::nearest(const Point & p, std::size_t k) const {
-    PointSet result;
     std::set<Point, decltype(utils::distance_cmp(p))> set(utils::distance_cmp(p));
+    PointSet result;
     nearest(m_root, p, k, set);
     for (auto point : set) {
         result.put(point);
@@ -223,33 +193,24 @@ PointSet::nearest(const Point & p, std::size_t k) const {
 
 template <typename Set>
 void PointSet::nearest(const Node * node, const Point & p, std::size_t k, Set & set) const {
-    if (node == nullptr) {
+    if (node == nullptr ||
+        (set.size() == k && node->rect.distance(p) > p.distance(*set.rbegin()))) {
         return;
-    } else if (set.size() < k || p.distance(node->point) <= p.distance(*set.rbegin())) {
+    } else if (set.size() < k || p.distance(node->point) < p.distance(*set.rbegin())) {
         set.insert(node->point);
         if (set.size() > k) {
             set.erase(*set.rbegin());
         }
     }
-    if (node->left != nullptr && node->right != nullptr) {
-        double left_dist = node->left->rect.distance(p);
-        double right_dist = node->right->rect.distance(p);
 
-        if (left_dist < right_dist) {
-            nearest(node->left, p, k, set);
-            if (right_dist < p.distance(*set.rbegin())) {
-                nearest(node->right, p, k, set);
-            }
-        } else {
-            nearest(node->right, p, k, set);
-            if (left_dist < p.distance(*set.rbegin())) {
-                nearest(node->left, p, k, set);
-            }
-        }
-    } else if (node->left != nullptr && node->left->rect.distance(p) < p.distance(*set.rbegin())) {
-        nearest(node->left, p, k, set);
-    } else if (node->right != nullptr && node->right->rect.distance(p) < p.distance(*set.rbegin())) {
-        nearest(node->right, p, k, set);
+    auto near = node->left;
+    auto far = node->right;
+    if (far != nullptr && (near == nullptr || near->rect.distance(p) > far->rect.distance(p))) {
+        std::swap(near, far);
+    }
+    nearest(near, p, k, set);
+    if (far != nullptr && far->rect.distance(p) < p.distance(*set.rbegin())) {
+        nearest(far, p, k, set);
     }
 }
 

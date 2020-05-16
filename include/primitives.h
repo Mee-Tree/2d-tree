@@ -116,7 +116,7 @@ private:
     void put(Node * &, const Point &, const Rect &, unsigned);
     bool contains(const Node *, const Point &) const;
     void range(const Node *, const Rect &, PointSet &) const;
-    void nearest(const Node *, const Point &, Point &) const;
+
     template <typename Set>
     void nearest(const Node *, const Point &, std::size_t, Set &) const;
 
