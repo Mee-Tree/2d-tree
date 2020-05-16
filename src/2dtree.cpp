@@ -46,6 +46,11 @@ struct PointSet::Node {
         }
         return Rect(left_bottom, resize(right_top));
     }
+
+    ~Node() {
+        delete left;
+        delete right;
+    }
 };
 
 /* ---------------DfsIterator--------------- */
