@@ -4,6 +4,7 @@
 #include <ostream>
 #include <algorithm>
 #include <experimental/iterator>
+#include <cfloat>
 
 /* ----------Point Implementation---------- */
 
@@ -55,6 +56,9 @@ std::ostream & operator << (std::ostream & out, const Point & point) {
 }
 
 /* -----------Rect Implementation---------- */
+
+Rect::Rect()
+    : Rect(Point(DBL_MIN, DBL_MIN), Point(DBL_MAX, DBL_MAX)) {}
 
 Rect::Rect(const Point & left_bottom, const Point & right_top)
     : m_left_bottom(left_bottom), m_right_top(right_top) {}
@@ -122,13 +126,12 @@ PointSet::ForwardIt PointSet::end() const {
 
 std::pair<PointSet::ForwardIt, PointSet::ForwardIt>
 PointSet::range(const Rect & rect) const {
-    static std::set<Point> result;
-    result.clear();
-    std::copy_if(begin(), end(), std::inserter(result, result.end()),
+    query_result.clear();
+    std::copy_if(begin(), end(), std::inserter(query_result, query_result.end()),
         [&rect](const Point & p) {
             return rect.contains(p);
     });
-    return std::make_pair(result.begin(), result.end());
+    return std::make_pair(query_result.begin(), query_result.end());
 }
 
 std::optional<Point> PointSet::nearest(const Point & p) const {
@@ -140,10 +143,11 @@ std::optional<Point> PointSet::nearest(const Point & p) const {
 
 std::pair<PointSet::ForwardIt, PointSet::ForwardIt>
 PointSet::nearest(const Point & p, std::size_t k) const {
-    static std::set<Point, decltype(utils::distance_cmp(p))> result(utils::distance_cmp(p));
-    result.clear();
-    std::copy(begin(), end(), std::inserter(result, result.end()));
-    return std::make_pair(result.begin(), std::next(result.begin(), k));
+    std::vector<Point> result(std::min(k, size()));
+    std::partial_sort_copy(begin(), end(), result.begin(), result.end(), utils::distance_cmp(p));
+    query_result.clear();
+    std::copy(result.begin(), result.end(), std::inserter(query_result, query_result.end()));
+    return std::make_pair(query_result.begin(), query_result.end());
 }
 
 std::ostream & operator << (std::ostream & strm, const PointSet & ps) {

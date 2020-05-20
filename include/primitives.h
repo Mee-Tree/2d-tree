@@ -10,6 +10,7 @@ class Point {
     double m_y;
 
 public:
+    Point() = default;
 	Point(double x, double y);
 
 	double x() const;
@@ -32,6 +33,7 @@ class Rect {
     Point m_right_top;
 
 public:
+    Rect();
 	Rect(const Point & left_bottom, const Point & right_top);
 
 	double xmin() const;
@@ -78,6 +80,9 @@ public:
     std::pair<ForwardIt, ForwardIt> nearest(const Point & p, std::size_t k) const;
 
     friend std::ostream & operator << (std::ostream &, const PointSet &);
+
+private:
+    mutable std::set<Point> query_result;
 
 };
 
@@ -146,6 +151,9 @@ public:
 
     bool operator == (const dfs_iterator & other) const;
     bool operator != (const dfs_iterator & other) const;
+
+    dfs_iterator & operator = (const dfs_iterator & other) = default;
+    dfs_iterator & operator = (dfs_iterator && other) = default;
 
 private:
     std::size_t m_current;

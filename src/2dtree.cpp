@@ -62,13 +62,10 @@ PointSet::dfs_iterator::dfs_iterator(const PointSet & ps, std::size_t ind = 0)
 }
 
 void PointSet::dfs_iterator::traverse(Node * node) {
+    if (node == nullptr) { return; }
     m_traversal.push_back(node->point);
-    if (node->left != nullptr) {
-        traverse(node->left);
-    }
-    if (node->right != nullptr) {
-        traverse(node->right);
-    }
+    traverse(node->left);
+    traverse(node->right);
 }
 
 PointSet::dfs_iterator::reference PointSet::dfs_iterator::operator * () const {
@@ -125,7 +122,7 @@ std::size_t PointSet::size() const {
 }
 
 void PointSet::put(const Point & p) {
-    put(m_root, p, Rect(Point(0., 0.), Point(1., 1.)), 0);
+    put(m_root, p, Rect(), 0);
 }
 
 void PointSet::put(Node * & node, const Point & p, const Rect & rect, unsigned depth) {
@@ -193,7 +190,7 @@ PointSet::nearest(const Point & p, std::size_t k) const {
 
 template <typename Set>
 void PointSet::nearest(const Node * node, const Point & p, std::size_t k, Set & set) const {
-    if (node == nullptr ||
+    if (node == nullptr || k == 0 ||
         (set.size() == k && node->rect.distance(p) > p.distance(*set.rbegin()))) {
         return;
     } else if (set.size() < k || p.distance(node->point) < p.distance(*set.rbegin())) {
