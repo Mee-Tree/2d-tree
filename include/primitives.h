@@ -4,13 +4,10 @@
 #include <optional>
 #include <vector>
 #include <set>
+#include <memory>
 
-class Point {
-    double m_x;
-    double m_y;
-
-public:
-    Point() = default;
+struct Point {
+    Point();
 	Point(double x, double y);
 
 	double x() const;
@@ -26,13 +23,12 @@ public:
 
 	friend std::ostream & operator << (std::ostream &, const Point &);
 
+private:
+    double m_x;
+    double m_y;
 };
 
-class Rect {
-    Point m_left_bottom;
-    Point m_right_top;
-
-public:
+struct Rect {
     Rect();
 	Rect(const Point & left_bottom, const Point & right_top);
 
@@ -44,6 +40,10 @@ public:
 
 	bool contains(const Point & p) const;
 	bool intersects(const Rect &) const;
+
+private:
+    Point m_left_bottom;
+    Point m_right_top;
 };
 
 namespace utils {
@@ -60,7 +60,6 @@ namespace rbtree {
 
 class PointSet {
     using Data = std::set<Point>;
-    Data m_data;
 
 public:
     using ForwardIt = Data::const_iterator;
@@ -82,7 +81,8 @@ public:
     friend std::ostream & operator << (std::ostream &, const PointSet &);
 
 private:
-    mutable std::set<Point> query_result;
+    mutable Data query_result;
+    Data m_data;
 
 };
 
@@ -94,9 +94,7 @@ class PointSet {
     struct Node;
     class dfs_iterator;
 
-    Node * m_root;
-    std::size_t m_size;
-
+    using NodePtr = std::shared_ptr<Node>;
 public:
     using ForwardIt = dfs_iterator;
 
@@ -118,12 +116,15 @@ public:
     friend std::ostream & operator << (std::ostream &, const PointSet &);
 
 private:
-    void put(Node * &, const Point &, const Rect &, unsigned);
-    bool contains(const Node *, const Point &) const;
-    void range(const Node *, const Rect &, PointSet &) const;
+    void put(NodePtr &, const Point &, const Rect &, unsigned);
+    bool contains(const NodePtr &, const Point &) const;
+    void range(const NodePtr &, const Rect &, PointSet &) const;
 
     template <typename Set>
-    void nearest(const Node *, const Point &, std::size_t, Set &) const;
+    void nearest(const NodePtr &, const Point &, std::size_t, Set &) const;
+
+    std::shared_ptr<Node> m_root;
+    std::size_t m_size;
 
 };
 
@@ -131,7 +132,7 @@ class PointSet::dfs_iterator {
     friend class PointSet;
 
     dfs_iterator(const PointSet &, std::size_t);
-    void traverse(Node *);
+    void traverse(const NodePtr &);
 
 public:
     using value_type = const Point;

@@ -4,9 +4,11 @@
 #include <ostream>
 #include <algorithm>
 #include <experimental/iterator>
-#include <cfloat>
+#include <tuple>
 
 /* ----------Point Implementation---------- */
+
+Point::Point() : Point(0., 0.) {}
 
 Point::Point(double x, double y)
         : m_x(x), m_y(y) {}
@@ -22,12 +24,11 @@ double Point::y() const {
 double Point::distance(const Point & other) const {
     double delta_x = m_x - other.m_x;
     double delta_y = m_y - other.m_y;
-    return sqrt(delta_x * delta_x + delta_y * delta_y);
+    return std::hypot(delta_x, delta_y);
 }
 
 bool Point::operator < (const Point & other) const {
-    return m_x < other.m_x ||
-         (m_x == other.m_x && m_y < other.m_y);
+    return std::tie(m_x, m_y) < std::tie(other.m_x, other.m_y);
 }
 
 bool Point::operator > (const Point & other) const {
@@ -58,7 +59,8 @@ std::ostream & operator << (std::ostream & out, const Point & point) {
 /* -----------Rect Implementation---------- */
 
 Rect::Rect()
-    : Rect(Point(DBL_MIN, DBL_MIN), Point(DBL_MAX, DBL_MAX)) {}
+    : Rect(Point(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest()),
+           Point(std::numeric_limits<double>::max(), std::numeric_limits<double>::max())) {}
 
 Rect::Rect(const Point & left_bottom, const Point & right_top)
     : m_left_bottom(left_bottom), m_right_top(right_top) {}

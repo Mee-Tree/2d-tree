@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <experimental/iterator>
+#include <memory>
 
 namespace kdtree {
 
@@ -12,12 +13,11 @@ struct PointSet::Node {
     const Rect rect;
     unsigned depth;
 
-    Node * left;
-    Node * right;
+    NodePtr left;
+    NodePtr right;
 
     Node(const Point & p, const Rect & r, unsigned depth = 0)
-            : point(p), rect(r), depth(depth)
-            , left(nullptr), right(nullptr) {}
+            : point(p), rect(r), depth(depth) {}
 
     bool operator < (const Point & other) const {
         if (depth % 2 == 0) {
@@ -48,8 +48,8 @@ struct PointSet::Node {
     }
 
     ~Node() {
-        delete left;
-        delete right;
+        left.reset();
+        right.reset();
     }
 };
 
@@ -61,7 +61,7 @@ PointSet::dfs_iterator::dfs_iterator(const PointSet & ps, std::size_t ind = 0)
     traverse(ps.m_root);
 }
 
-void PointSet::dfs_iterator::traverse(Node * node) {
+void PointSet::dfs_iterator::traverse(const std::shared_ptr<Node> & node) {
     if (node == nullptr) { return; }
     m_traversal.push_back(node->point);
     traverse(node->left);
@@ -99,10 +99,10 @@ bool PointSet::dfs_iterator::operator != (const dfs_iterator & other) const {
 /* ----------------PointSet----------------- */
 
 PointSet::PointSet()
-    : m_root(nullptr), m_size(0) {}
+    : m_size(0) {}
 
 PointSet::~PointSet() {
-    delete m_root;
+    m_root.reset();
 }
 
 PointSet::ForwardIt PointSet::begin() const {
@@ -125,9 +125,9 @@ void PointSet::put(const Point & p) {
     put(m_root, p, Rect(), 0);
 }
 
-void PointSet::put(Node * & node, const Point & p, const Rect & rect, unsigned depth) {
+void PointSet::put(NodePtr & node, const Point & p, const Rect & rect, unsigned depth) {
     if (node == nullptr) {
-        node = new Node(p, rect, depth);
+        node = std::make_shared<Node>(p, rect, depth);
         ++m_size;
     } else if (*node == p) {
         // ignored
@@ -142,7 +142,7 @@ bool PointSet::contains(const Point & p) const {
     return !empty() && contains(m_root, p);
 }
 
-bool PointSet::contains(const Node * node, const Point & p) const {
+bool PointSet::contains(const NodePtr & node, const Point & p) const {
     if (node == nullptr) {
         return false;
     } else if (*node == p) {
@@ -167,7 +167,7 @@ PointSet::range(const Rect & rect) const {
     return std::make_pair(result.begin(), result.end());
 }
 
-void PointSet::range(const Node * node, const Rect & rect, PointSet & res) const {
+void PointSet::range(const NodePtr & node, const Rect & rect, PointSet & res) const {
     if (node == nullptr || !node->rect.intersects(rect)) {
         return;
     } else if (rect.contains(node->point)) {
@@ -189,7 +189,7 @@ PointSet::nearest(const Point & p, std::size_t k) const {
 }
 
 template <typename Set>
-void PointSet::nearest(const Node * node, const Point & p, std::size_t k, Set & set) const {
+void PointSet::nearest(const NodePtr & node, const Point & p, std::size_t k, Set & set) const {
     if (node == nullptr || k == 0 ||
         (set.size() == k && node->rect.distance(p) > p.distance(*set.rbegin()))) {
         return;
