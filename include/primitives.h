@@ -65,7 +65,6 @@ public:
     using ForwardIt = Data::const_iterator;
 
     PointSet();
-    PointSet(PointSet &&) = default;
 
     bool empty() const;
     std::size_t size() const;
@@ -100,6 +99,9 @@ public:
     using ForwardIt = dfs_iterator;
 
     PointSet();
+    PointSet(const PointSet &);
+    PointSet(PointSet &&) = default;
+
     ~PointSet();
 
     bool empty() const;

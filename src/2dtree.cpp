@@ -19,6 +19,13 @@ struct PointSet::Node {
     Node(const Point & p, const Rect & r, unsigned depth = 0)
             : point(p), rect(r), depth(depth) {}
 
+    Node(const Node & other)
+        : point(other.point), rect(other.rect), depth(other.depth)
+        , left(other.left != nullptr ?
+            std::make_unique<Node>(*other.left) : nullptr)
+        , right(other.right != nullptr ?
+            std::make_unique<Node>(*other.right) : nullptr) {}
+
     Node(Node &&) = default;
 
     bool operator < (const Point & other) const {
@@ -102,6 +109,10 @@ bool PointSet::dfs_iterator::operator != (const dfs_iterator & other) const {
 
 PointSet::PointSet()
     : m_size(0) {}
+
+PointSet::PointSet(const PointSet & other)
+    : m_root(other.m_root != nullptr ?
+        std::make_unique<Node>(*other.m_root) : nullptr) {}
 
 PointSet::~PointSet() {
     m_root.reset();
