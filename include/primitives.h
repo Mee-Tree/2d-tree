@@ -65,6 +65,7 @@ public:
     using ForwardIt = Data::const_iterator;
 
     PointSet();
+    PointSet(PointSet &&) = default;
 
     bool empty() const;
     std::size_t size() const;
@@ -94,7 +95,7 @@ class PointSet {
     struct Node;
     class dfs_iterator;
 
-    using NodePtr = std::shared_ptr<Node>;
+    using NodePtr = std::unique_ptr<Node>;
 public:
     using ForwardIt = dfs_iterator;
 
@@ -123,7 +124,7 @@ private:
     template <typename Set>
     void nearest(const NodePtr &, const Point &, std::size_t, Set &) const;
 
-    std::shared_ptr<Node> m_root;
+    NodePtr m_root;
     std::size_t m_size;
 
 };

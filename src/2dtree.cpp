@@ -19,6 +19,8 @@ struct PointSet::Node {
     Node(const Point & p, const Rect & r, unsigned depth = 0)
             : point(p), rect(r), depth(depth) {}
 
+    Node(Node &&) = default;
+
     bool operator < (const Point & other) const {
         if (depth % 2 == 0) {
             return point < other;
@@ -61,7 +63,7 @@ PointSet::dfs_iterator::dfs_iterator(const PointSet & ps, std::size_t ind = 0)
     traverse(ps.m_root);
 }
 
-void PointSet::dfs_iterator::traverse(const std::shared_ptr<Node> & node) {
+void PointSet::dfs_iterator::traverse(const NodePtr & node) {
     if (node == nullptr) { return; }
     m_traversal.push_back(node->point);
     traverse(node->left);
@@ -127,7 +129,7 @@ void PointSet::put(const Point & p) {
 
 void PointSet::put(NodePtr & node, const Point & p, const Rect & rect, unsigned depth) {
     if (node == nullptr) {
-        node = std::make_shared<Node>(p, rect, depth);
+        node = std::make_unique<Node>(p, rect, depth);
         ++m_size;
     } else if (*node == p) {
         // ignored
@@ -200,8 +202,8 @@ void PointSet::nearest(const NodePtr & node, const Point & p, std::size_t k, Set
         }
     }
 
-    auto near = node->left;
-    auto far = node->right;
+    auto & near = node->left;
+    auto & far = node->right;
     if (far != nullptr && (near == nullptr || near->rect.distance(p) > far->rect.distance(p))) {
         std::swap(near, far);
     }
