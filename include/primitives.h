@@ -88,7 +88,7 @@ static inline put_iterator<Container> putter(Container & c) {
 
 template <class T>
 class forward_iterator_wrapper {
-    std::vector<T> m_c;
+    std::vector<T> m_data;
     std::size_t m_cur;
 
 public:
@@ -98,21 +98,20 @@ public:
     using pointer = value_type *;
     using reference = value_type &;
 
-    forward_iterator_wrapper(const std::set<T> & c, std::size_t ind = 0)
-        : m_c(c.size()), m_cur(ind) {
-        std::copy(c.begin(), c.end(), m_c.begin());
+    template <template <class ...> class Container>
+    forward_iterator_wrapper(const Container<T> & c, std::size_t ind = 0)
+        : m_data(c.size()), m_cur(ind) {
+        std::copy(c.begin(), c.end(), m_data.begin());
     }
 
-    forward_iterator_wrapper(const forward_iterator_wrapper &) = default;
+    reference operator * () const { return m_data[m_cur]; }
+    pointer operator -> ()  const { return &m_data[m_cur]; }
 
-    reference operator * () const { return m_c[m_cur]; }
-    pointer operator -> ()  const { return &m_c[m_cur]; }
-
-    forward_iterator_wrapper & operator ++ ()  { ++m_cur; return *this; }
-    forward_iterator_wrapper operator ++ (int) { auto tmp(*this); ++m_cur; return tmp; }
+    auto & operator ++ ()  { ++m_cur; return *this; }
+    auto operator ++ (int) { auto tmp(*this); ++m_cur; return tmp; }
 
     bool operator == (const forward_iterator_wrapper & other) const {
-        return m_c == other.m_c && m_cur == other.m_cur;
+        return m_data == other.m_data && m_cur == other.m_cur;
     }
     bool operator != (const forward_iterator_wrapper & other) const {
         return !(*this == other);

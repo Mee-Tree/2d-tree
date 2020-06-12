@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <experimental/iterator>
 #include <tuple>
-#include <iostream>
 
 /* ----------Point Implementation---------- */
 
