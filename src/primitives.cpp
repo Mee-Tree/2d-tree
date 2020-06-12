@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <experimental/iterator>
 #include <tuple>
+#include <iostream>
 
 /* ----------Point Implementation---------- */
 
@@ -119,21 +120,21 @@ bool PointSet::contains(const Point & p) const {
 }
 
 PointSet::ForwardIt PointSet::begin() const {
-    return m_data.begin();
+    return utils::forward_iterator_wrapper(m_data);
 }
 
 PointSet::ForwardIt PointSet::end() const {
-    return m_data.end();
+    return utils::forward_iterator_wrapper(m_data, size());
 }
 
 std::pair<PointSet::ForwardIt, PointSet::ForwardIt>
 PointSet::range(const Rect & rect) const {
-    query_result.clear();
-    std::copy_if(begin(), end(), std::inserter(query_result, query_result.end()),
+    PointSet set;
+    std::copy_if(begin(), end(), utils::putter(set),
         [&rect](const Point & p) {
             return rect.contains(p);
     });
-    return std::make_pair(query_result.begin(), query_result.end());
+    return std::make_pair(set.begin(), set.end());
 }
 
 std::optional<Point> PointSet::nearest(const Point & p) const {
@@ -147,9 +148,9 @@ std::pair<PointSet::ForwardIt, PointSet::ForwardIt>
 PointSet::nearest(const Point & p, std::size_t k) const {
     std::vector<Point> result(std::min(k, size()));
     std::partial_sort_copy(begin(), end(), result.begin(), result.end(), utils::distance_cmp(p));
-    query_result.clear();
-    std::copy(result.begin(), result.end(), std::inserter(query_result, query_result.end()));
-    return std::make_pair(query_result.begin(), query_result.end());
+    PointSet set;
+    std::copy(result.begin(), result.end(), utils::putter(set));
+    return std::make_pair(set.begin(), set.end());
 }
 
 std::ostream & operator << (std::ostream & strm, const PointSet & ps) {

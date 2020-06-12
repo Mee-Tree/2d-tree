@@ -54,6 +54,71 @@ static inline auto distance_cmp(const Point & p) {
     };
 }
 
+template <class Container>
+class put_iterator {
+    Container * container;
+
+public:
+    using iterator_category = std::output_iterator_tag;
+    using value_type = void;
+    using difference_type = void;
+    using pointer = void;
+    using reference = void;
+    using container_type = Container;
+
+    put_iterator (Container& c) : container(std::addressof(c)) {}
+
+    auto & operator = (const typename Container::value_type & value) {
+        container->put(value);
+        return *this;
+    }
+    auto & operator = (typename Container::value_type && value) {
+        container->put(std::move(value));
+        return *this;
+    }
+    auto & operator * ()   { return *this; }
+    auto & operator ++ ()  { return *this; }
+    auto operator ++ (int) { return *this; }
+};
+
+template <class Container>
+static inline put_iterator<Container> putter(Container & c) {
+    return put_iterator(c);
+}
+
+template <class T>
+class forward_iterator_wrapper {
+    std::vector<T> m_c;
+    std::size_t m_cur;
+
+public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = const T;
+    using difference_type = ptrdiff_t;
+    using pointer = value_type *;
+    using reference = value_type &;
+
+    forward_iterator_wrapper(const std::set<T> & c, std::size_t ind = 0)
+        : m_c(c.size()), m_cur(ind) {
+        std::copy(c.begin(), c.end(), m_c.begin());
+    }
+
+    forward_iterator_wrapper(const forward_iterator_wrapper &) = default;
+
+    reference operator * () const { return m_c[m_cur]; }
+    pointer operator -> ()  const { return &m_c[m_cur]; }
+
+    forward_iterator_wrapper & operator ++ ()  { ++m_cur; return *this; }
+    forward_iterator_wrapper operator ++ (int) { auto tmp(*this); ++m_cur; return tmp; }
+
+    bool operator == (const forward_iterator_wrapper & other) const {
+        return m_c == other.m_c && m_cur == other.m_cur;
+    }
+    bool operator != (const forward_iterator_wrapper & other) const {
+        return !(*this == other);
+    }
+};
+
 } // end of namespace utils
 
 namespace rbtree {
@@ -62,7 +127,8 @@ class PointSet {
     using Data = std::set<Point>;
 
 public:
-    using ForwardIt = Data::const_iterator;
+    using ForwardIt = utils::forward_iterator_wrapper<Point>;
+    using value_type = Point;
 
     PointSet();
 
@@ -81,7 +147,6 @@ public:
     friend std::ostream & operator << (std::ostream &, const PointSet &);
 
 private:
-    mutable Data query_result;
     Data m_data;
 
 };
