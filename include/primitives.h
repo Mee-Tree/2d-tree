@@ -54,38 +54,6 @@ static inline auto distance_cmp(const Point & p) {
     };
 }
 
-template <class Container>
-class put_iterator {
-    Container * container;
-
-public:
-    using iterator_category = std::output_iterator_tag;
-    using value_type = void;
-    using difference_type = void;
-    using pointer = void;
-    using reference = void;
-    using container_type = Container;
-
-    put_iterator (Container& c) : container(std::addressof(c)) {}
-
-    auto & operator = (const typename Container::value_type & value) {
-        container->put(value);
-        return *this;
-    }
-    auto & operator = (typename Container::value_type && value) {
-        container->put(std::move(value));
-        return *this;
-    }
-    auto & operator * ()   { return *this; }
-    auto & operator ++ ()  { return *this; }
-    auto operator ++ (int) { return *this; }
-};
-
-template <class Container>
-static inline put_iterator<Container> putter(Container & c) {
-    return put_iterator(c);
-}
-
 template <class T>
 class forward_iterator_wrapper {
     std::vector<T> m_data;
