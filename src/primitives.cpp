@@ -119,21 +119,21 @@ bool PointSet::contains(const Point & p) const {
 }
 
 PointSet::ForwardIt PointSet::begin() const {
-    return utils::forward_iterator_wrapper(m_data);
+    return m_data.begin();
 }
 
 PointSet::ForwardIt PointSet::end() const {
-    return utils::forward_iterator_wrapper(m_data, size());
+    return m_data.end();
 }
 
-std::pair<PointSet::ForwardIt, PointSet::ForwardIt>
+std::pair<PointSet::QueryIt, PointSet::QueryIt>
 PointSet::range(const Rect & rect) const {
-    PointSet set;
-    std::copy_if(begin(), end(), utils::putter(set),
+    Query query;
+    std::copy_if(begin(), end(), std::back_inserter(query),
         [&rect](const Point & p) {
             return rect.contains(p);
     });
-    return std::make_pair(set.begin(), set.end());
+    return std::make_pair(query.begin(), query.end());
 }
 
 std::optional<Point> PointSet::nearest(const Point & p) const {
@@ -143,13 +143,12 @@ std::optional<Point> PointSet::nearest(const Point & p) const {
     return *std::min_element(begin(), end(), utils::distance_cmp(p));
 }
 
-std::pair<PointSet::ForwardIt, PointSet::ForwardIt>
+std::pair<PointSet::QueryIt, PointSet::QueryIt>
 PointSet::nearest(const Point & p, std::size_t k) const {
-    std::vector<Point> result(std::min(k, size()));
-    std::partial_sort_copy(begin(), end(), result.begin(), result.end(), utils::distance_cmp(p));
-    PointSet set;
-    std::copy(result.begin(), result.end(), utils::putter(set));
-    return std::make_pair(set.begin(), set.end());
+    std::vector<Point> sorted(std::min(k, size()));
+    std::partial_sort_copy(begin(), end(), sorted.begin(), sorted.end(), utils::distance_cmp(p));
+    Query query(std::move(sorted));
+    return std::make_pair(query.begin(), query.end());
 }
 
 std::ostream & operator << (std::ostream & strm, const PointSet & ps) {

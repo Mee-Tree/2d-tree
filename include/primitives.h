@@ -125,9 +125,26 @@ namespace rbtree {
 class PointSet {
     using Data = std::set<Point>;
 
+    struct Query {
+        using value_type = Data::value_type;
+        using const_iterator = utils::forward_iterator_wrapper<value_type>;
+
+        Query() = default;
+        Query(std::vector<value_type> && other) : m_query(std::move(other)) {}
+
+        auto begin() const { return const_iterator(m_query); }
+        auto end()   const { return const_iterator(m_query, m_query.size()); }
+
+        void push_back(const value_type & v) { m_query.emplace_back(v); }
+        void push_back(value_type && v)      { m_query.emplace_back(std::move(v)); }
+
+    private:
+        std::vector<value_type> m_query;
+    };
+
 public:
-    using ForwardIt = utils::forward_iterator_wrapper<Point>;
-    using value_type = Point;
+    using ForwardIt = Data::const_iterator;
+    using QueryIt = Query::const_iterator;
 
     PointSet();
 
@@ -136,12 +153,12 @@ public:
     void put(const Point &);
     bool contains(const Point &) const;
 
-    std::pair<ForwardIt, ForwardIt> range(const Rect &) const;
+    std::pair<QueryIt, QueryIt> range(const Rect &) const;
     ForwardIt begin() const;
     ForwardIt end() const;
 
     std::optional<Point> nearest(const Point &) const;
-    std::pair<ForwardIt, ForwardIt> nearest(const Point & p, std::size_t k) const;
+    std::pair<QueryIt, QueryIt> nearest(const Point & p, std::size_t k) const;
 
     friend std::ostream & operator << (std::ostream &, const PointSet &);
 
